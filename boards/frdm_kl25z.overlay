@@ -2,6 +2,7 @@
     aliases {
         my-adc = &adc0;
         my-adc-channel = &adc_ch0;
+        my-adc-channel1 = &adc_ch1
     };
 };
 
@@ -12,6 +13,15 @@
 
     adc_ch0: channel@0 {
         reg = <0>;
+        zephyr,gain = "ADC_GAIN_1";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+        zephyr,vref-mv = <3300>;
+    };
+
+    adc_ch1: channel@1 {
+        reg = <1>;
         zephyr,gain = "ADC_GAIN_1";
         zephyr,reference = "ADC_REF_INTERNAL";
         zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
