@@ -8,13 +8,16 @@ const struct device *i2c = DEVICE_DT_GET(DT_NODELABEL(i2c0));
 static const struct gpio_dt_spec btn = GPIO_DT_SPEC_GET(DT_NODELABEL(user_button_0), gpios);
 static const struct device *adc = DEVICE_DT_GET(DT_ALIAS(my_adc));
 static const struct adc_channel_cfg adc_ch = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel));
+static const struct adc_channel_cfg adc_ch1 = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel1));
+
 
 int main(void)
 {
     int theta;
     Servo myServoGamma(TPM1, 0, GPIOB, 0);
     Servo myServoBeta(TPM1, 1, GPIOB, 1);
-    Potenciometro myPot(adc, adc_ch);
+    Potenciometro myPotGamma(adc, adc_ch);
+    Potenciometro myPotBeta (adc, adc_ch1);
     MyRTC myTimer(i2c);
     Tracker tracker(-23.5570, -46.7290);
     Button myButton(btn);
@@ -33,19 +36,18 @@ int main(void)
                 agora = myTimer.getTempo();
                 tracker.atualizar(agora);
                 myServoGamma.write(tracker.getGamma());
+                theta = myPotBeta.read();
                 if (tracker.getBeta() < 45) theta = 45;
                 if (tracker.getBeta() > 135) theta = 135;
                 myServoBeta.write(theta);
                 k_msleep(1000);
                 break;
 
-            case MODO_MANUAL_1G:
-                theta = myPot.read();
+            case MODO_MANUAL:
+                theta = myPotGamma.read();
                 myServoGamma.write(theta);
-                break;
 
-            case MODO_MANUAL_2B:
-                theta = myPot.read();
+                theta = myPotBeta.read();
                 if (theta < 45) theta = 45;
                 if (theta > 135) theta = 135;
                 myServoBeta.write(theta);

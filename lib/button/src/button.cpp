@@ -22,10 +22,7 @@ void Button::handle_interrupt()
         case MODO_AUTOMATICO:
             modo_atual_ = MODO_MANUAL_1G;
             break;
-        case MODO_MANUAL_1G:
-            modo_atual_ = MODO_MANUAL_2B;
-            break;
-        case MODO_MANUAL_2B:
+        case MODO_MANUAL:
             modo_atual_ = MODO_AUTOMATICO;
             break;
     }
