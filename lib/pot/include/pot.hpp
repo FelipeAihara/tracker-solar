@@ -15,7 +15,7 @@ private:
     uint32_t vref_mv;
 
 public:
-    Potenciometro(const struct device *adc, adc_channel_cfg adc_ch);
+    Potenciometro(const struct device *adc, adc_channel_cfg adc_ch, uint32_t vref, uint8_t resolution);
 
     int read();
 };

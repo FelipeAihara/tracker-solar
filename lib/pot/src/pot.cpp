@@ -1,15 +1,20 @@
+/* 
+Esse código não está muito bom. Problemas nas linhas 8 e 13, em que eu coloquei as propriedades
+de um canal específico. Entretanto, como ambos os canais têm as mesmas propriedades, não muda
+muito.
+*/ 
+
 #include "pot.hpp"
 
-Potenciometro::Potenciometro(const struct device *adc, adc_channel_cfg adc_ch) :
-    adc_(adc), adc_ch_(adc_ch)
+Potenciometro::Potenciometro(const struct device *adc, adc_channel_cfg adc_ch, uint32_t vref, uint8_t resolution) :
+    adc_(adc), adc_ch_(adc_ch), vref_mv(vref)
 {   
-    vref_mv = DT_PROP(DT_ALIAS(my_adc_channel), zephyr_vref_mv);
-    seq = {
-        .channels = BIT(adc_ch_.channel_id),
-        .buffer = &buf,
-        .buffer_size = sizeof(buf),
-        .resolution = DT_PROP(DT_ALIAS(my_adc_channel), zephyr_resolution)
-    };
+    seq.channels = BIT(adc_ch_.channel_id);
+    seq.buffer = &buf;
+    seq.buffer_size = sizeof(buf);
+    seq.resolution = resolution;
+    seq.options = NULL;
+    seq.calibrate = false;
 
     if (!device_is_ready(adc_)) {
         printk("ADC peripheral is not ready\r\n");
@@ -17,7 +22,7 @@ Potenciometro::Potenciometro(const struct device *adc, adc_channel_cfg adc_ch) :
 
     int ret = adc_channel_setup(adc_, &adc_ch_);
     if (ret < 0) {
-        printk("Could not set up ADC\r\n");
+        printk("Could not set up ADC %d\r\n", adc_ch_.channel_id);
     }
 }
 

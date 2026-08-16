@@ -1,0 +1,57 @@
+// 2 servos
+// 2 potenciometros
+// 1 botão
+// 1 GPS
+// 1 bússola
+
+// Servo 1: GPIO1
+// Servo 2: GPIO2
+// Botão: GPIO11
+// Pot 1: GPIO10
+// Pot 2: GPIO9
+// GPS RX: GPIO4
+// GPS TX: GPIO5
+// Bússola SCL: GPIO16
+// Bússola SDA: GPIO15
+
+/ {
+    aliases {
+        my-adc = &adc0;
+        my-adc-channel1 = &adc_ch8;
+        my-adc-channel2 = &adc_ch9;
+    };
+
+    chosen {
+        zephyr,console = &usb_serial;
+        zephyr,shell-uart = &usb_serial;
+    };
+};
+
+&adc0 {
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    adc_ch8: channel@8 {
+        reg = <8>;
+        zephyr,gain = "ADC_GAIN_1_4";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,vref-mv = <3894>;
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+
+    adc_ch9: channel@9 {
+        reg = <9>;
+        zephyr,gain = "ADC_GAIN_1_4";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,vref-mv = <3894>;
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+};
+
+&usb_serial {
+    status = "okay";
+};
+
