@@ -1,30 +1,73 @@
-// Teste standalone do modulo Button (button.hpp)
-// Copie o conteudo deste arquivo para src/main.cpp, depois:
-// A cada aperto do botao, o modo avanca no ciclo
-// AUTOMATICO -> MANUAL_1G -> MANUAL_2B -> AUTOMATICO.
-
 #include <zephyr/kernel.h>
-#include <zephyr/sys/printk.h>
-#include <button.hpp>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/pwm.h>
 
-static const struct gpio_dt_spec user_btn = GPIO_DT_SPEC_GET(DT_ALIAS(user_button), gpios);
+#include <servo.hpp>
+#include <rtc.hpp>
+#include <solarimetria.hpp>
+#include <button.hpp>
+#include <pot.hpp>
+
+// Latitude/longitude do local de instalação — ajustar para o local real.
+#define TRACKER_LATITUDE  -23.5570
+#define TRACKER_LONGITUDE -46.7290
+
+static const struct device *adc = DEVICE_DT_GET(DT_ALIAS(my_adc));
+
+static const struct adc_channel_cfg adc_ch1 = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel1));
+#define POT1_VREF DT_PROP(DT_ALIAS(my_adc_channel1), zephyr_vref_mv)
+#define POT1_RES  DT_PROP(DT_ALIAS(my_adc_channel1), zephyr_resolution)
+
+static const struct adc_channel_cfg adc_ch2 = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel2));
+#define POT2_VREF DT_PROP(DT_ALIAS(my_adc_channel2), zephyr_vref_mv)
+#define POT2_RES  DT_PROP(DT_ALIAS(my_adc_channel2), zephyr_resolution)
+
+static const struct pwm_dt_spec pwm_gamma = PWM_DT_SPEC_GET(DT_ALIAS(pwm_servo_gamma));
+static const struct pwm_dt_spec pwm_beta  = PWM_DT_SPEC_GET(DT_ALIAS(pwm_servo_beta));
+
+static const struct gpio_dt_spec btn = GPIO_DT_SPEC_GET(DT_ALIAS(user_button), gpios);
+
+static const struct device *i2c_rtc = DEVICE_DT_GET(DT_NODELABEL(i2c1));
 
 int main(void)
 {
-    Button myButton(user_btn);
-
-    Modo modo_anterior = myButton.getModoAtual();
+    Servo myServoGamma(pwm_gamma);
+    Servo myServoBeta(pwm_beta);
+    Potenciometro myPot1(adc, adc_ch1, POT1_VREF, POT1_RES);
+    Potenciometro myPot2(adc, adc_ch2, POT2_VREF, POT2_RES);
+    MyRTC myTimer(i2c_rtc);
+    Solarimetria solarimetria(TRACKER_LATITUDE, TRACKER_LONGITUDE);
+    Button myButton(btn);
+    struct tempo agora;
+    int theta1, theta2;
 
     while (1)
     {
-        Modo modo_atual = myButton.getModoAtual();
-
-        if (modo_atual != modo_anterior)
+        switch (myButton.getModoAtual())
         {
-            printk("Modo atual: %d\n", modo_atual);
-            modo_anterior = modo_atual;
-        }
+            case MODO_AUTOMATICO:
+                printk("Modo atual: %d\n", myButton.getModoAtual());
+                myTimer.read();
+                myTimer.printHorario();
+                agora = myTimer.getTempo();
+                solarimetria.atualizar(agora);
+                printk("Gamma: %d, Beta: %d\n", solarimetria.getGamma(), solarimetria.getBeta());
+                myServoGamma.write(solarimetria.getGamma());
+                myServoBeta.write(solarimetria.getBeta());
+                k_msleep(1000);
+                break;
 
-        k_msleep(100);
+            case MODO_MANUAL:
+                printk("Modo atual: %d\n", myButton.getModoAtual());
+                theta1 = myPot1.read();
+                theta2 = myPot2.read();
+                printk("Theta 1 = %d\n", theta1);
+                printk("Theta 2 = %d\n", theta2);
+                myServoGamma.write(theta1);
+                myServoBeta.write(theta2);
+                k_msleep(100);
+                break;
+        }
     }
 }
