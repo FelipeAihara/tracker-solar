@@ -1,0 +1,24 @@
+// Usando o potenciometro para controlar o tracker
+
+#include <zephyr/kernel.h>             // Funções básicas do Zephyr (ex: k_msleep, k_thread, etc.)
+#include <zephyr/device.h>             // API para obter e utilizar dispositivos do sistema
+#include <zephyr/drivers/gpio.h>       // API para controle de pinos de entrada/saída (GPIO)
+#include <servo.hpp>
+#include <pot.hpp>
+
+#define SLEEP_MS 100
+
+int main(void)
+{
+    int theta;
+    Servo meuServo1(TPM1, 0, GPIOB, 0);
+    Potenciometro meuPot;
+
+    while(1)
+    {
+        theta = meuPot.read();
+        meuServo1.write(theta);
+        k_msleep(SLEEP_MS);
+    }
+}
+

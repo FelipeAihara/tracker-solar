@@ -1,0 +1,4 @@
+tests:
+  tracker_solar.pot:
+    tags: tracker_solar
+    platform_allow: native_sim

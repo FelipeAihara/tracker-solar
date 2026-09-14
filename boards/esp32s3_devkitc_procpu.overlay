@@ -1,0 +1,111 @@
+// Servo 1 (Gamma): GPIO1 — PWM (LEDC canal 0)
+// Servo 2 (Beta):  GPIO2 — PWM (LEDC canal 1)
+// Botão: GPIO11
+// Pot 1: GPIO10
+// Pot 2: GPIO9
+// RTC/Bússola SDA (I2C1): GPIO4
+// RTC/Bússola SCL (I2C1): GPIO5
+// Servo e pot da direita, com fita isolante no cabo -> 
+
+#include <zephyr/dt-bindings/pwm/pwm.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    aliases {
+        my-adc = &adc0;
+        my-adc-channel1 = &adc_ch8;
+        my-adc-channel2 = &adc_ch9;
+        pwm-servo-gamma = &servo_gamma;
+        pwm-servo-beta = &servo_beta;
+        user-button = &user_btn;
+    };
+
+    chosen {
+        zephyr,console = &usb_serial;
+        zephyr,shell-uart = &usb_serial;
+    };
+
+    pwmservos {
+        compatible = "pwm-leds";
+
+        servo_gamma: servo_gamma {
+            pwms = <&ledc0 0 20000000 PWM_POLARITY_NORMAL>;
+        };
+
+        servo_beta: servo_beta {
+            pwms = <&ledc0 1 20000000 PWM_POLARITY_NORMAL>;
+        };
+    };
+
+    app_buttons {
+        compatible = "gpio-keys";
+
+        user_btn: user_btn {
+            gpios = <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        };
+    };
+};
+
+&adc0 {
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    adc_ch8: channel@8 {
+        reg = <8>;
+        zephyr,gain = "ADC_GAIN_1_4";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,vref-mv = <3894>;
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+
+    adc_ch9: channel@9 {
+        reg = <9>;
+        zephyr,gain = "ADC_GAIN_1_4";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,vref-mv = <3894>;
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
+};
+
+&pinctrl {
+    ledc0_default: ledc0_default {
+        group1 {
+            pinmux = <LEDC_CH0_GPIO1>,
+                     <LEDC_CH1_GPIO2>;
+            output-enable;
+        };
+    };
+};
+
+&ledc0 {
+    pinctrl-0 = <&ledc0_default>;
+    pinctrl-names = "default";
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel0@0 {
+        reg = <0x0>;
+        timer = <0>;
+    };
+
+    channel1@1 {
+        reg = <0x1>;
+        timer = <0>;
+    };
+};
+
+&gpio0 {
+    status = "okay";
+};
+
+&i2c1 {
+    status = "okay";
+};
+
+&usb_serial {
+    status = "okay";
+};

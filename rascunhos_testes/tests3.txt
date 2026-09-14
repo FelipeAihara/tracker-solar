@@ -1,0 +1,30 @@
+#include <servo.hpp>
+#include <rtc.hpp>
+#include <tracker.hpp>
+
+const struct device *i2c = DEVICE_DT_GET(DT_NODELABEL(i2c0));
+
+int main(void)
+{
+    int theta;
+    Servo meuServo1(TPM1, 0, GPIOB, 0);
+    MyRTC meuTimer(i2c);
+    Tracker tracker(-23.6028, -46.6438);
+
+    struct tempo set = { .sec=40, .min=25, .hour=11,
+                                .wday=7, .mday=28, .month=6, .year=26 };
+    meuTimer.write(&set);
+
+    while(1)
+    {
+        if (meuTimer.read() == 0)
+        {
+            struct tempo agora = meuTimer.getTempo();
+            tracker.atualizar(agora);
+            printk("Beta = %d\n", tracker.getBeta());
+            printk("Gamma = %d\n", tracker.getGamma());
+            meuTimer.printHorario();
+            k_msleep(1000);
+        }
+    }
+}

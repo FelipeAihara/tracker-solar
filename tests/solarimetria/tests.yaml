@@ -1,0 +1,4 @@
+tests:
+  tracker_solar.solarimetria:
+    tags: tracker_solar
+    platform_allow: native_sim

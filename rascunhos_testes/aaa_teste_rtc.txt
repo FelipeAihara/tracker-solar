@@ -1,0 +1,27 @@
+// Validado: 13/09/2026
+// Teste standalone do modulo MyRTC (rtc.hpp) - DS3231 via I2C1
+// Copie o conteudo deste arquivo para src/main.cpp, depois:
+// Para ajustar o horario uma unica vez: descomente o bloco "set" abaixo,
+// compile e flasheie, aguarde gravar, depois comente de novo e flasheie outra vez.
+
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/device.h>
+#include <rtc.hpp>
+
+static const struct device *i2c = DEVICE_DT_GET(DT_NODELABEL(i2c1));
+
+int main(void)
+{
+    MyRTC myTimer(i2c);
+
+    // struct tempo set = { .sec = 0, .min = 15, .hour = 11,
+    //                       .wday = 4, .mday = 2, .month = 7, .year = 26 };
+    // myTimer.write(&set);
+
+    while (1)
+    {
+        myTimer.printHorario();
+        k_msleep(1000);
+    }
+}

@@ -1,0 +1,59 @@
+#include <servo.hpp>
+#include <rtc.hpp>
+#include <tracker.hpp>
+#include <lcd.hpp>
+
+/*
+NOTAS PRINCIPAIS:
+- ADC: PTE20
+- RTC: 
+    SCL = PTC8
+    SDA = PTC9
+- Botão: PTA16
+- LCD: 
+
+OUTRAS NOTAS:
+- Se eu fosse refazer esse projeto, eu faria o método init para todas as minhas outras classes
+- Variável modo_atual_ está pública - mudar isso depois
+*/
+
+#define ZEPHYR_USER_NODE DT_PATH(zephyr_user)
+
+const struct device *i2c = DEVICE_DT_GET(DT_NODELABEL(i2c0));
+
+static const gpio_dt_spec lcd_rs = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 0);
+static const gpio_dt_spec lcd_en = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 1);
+static const gpio_dt_spec lcd_d4 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 2);
+static const gpio_dt_spec lcd_d5 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 3);
+static const gpio_dt_spec lcd_d6 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 4);
+static const gpio_dt_spec lcd_d7 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 5);
+
+
+int main(void)
+{
+    int theta;
+    Servo myServoGamma(TPM1, 0, GPIOB, 0);
+    Servo myServoBeta(TPM1, 1, GPIOB, 1);
+    MyRTC myTimer(i2c);
+    Tracker tracker(-23.6028, -46.6438);
+    LCD lcd(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7);
+    if (lcd.init() != 0) {
+        printk("Erro ao inicializar o LCD!\n");
+        return -1;
+    }
+    struct tempo agora;
+
+    while(1)
+    {
+            myTimer.read();
+            agora = myTimer.getTempo();
+            tracker.atualizar(agora);
+            myServoGamma.write(tracker.getGamma());
+            myServoBeta.write(tracker.getBeta());
+            myTimer.printHorario();
+            printk("b = %d, g = %d\n", myServoBeta.getAnguloAtual(), myServoGamma.getAnguloAtual());
+            k_msleep(1000);
+    }
+
+    return 0;
+}

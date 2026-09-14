@@ -1,0 +1,34 @@
+#include <servo.hpp>
+#include <rtc.hpp>
+#include <tracker.hpp>
+#include <button.hpp>
+#include "lcd.hpp"
+#include <pot.hpp>
+
+const struct device *i2c = DEVICE_DT_GET(DT_NODELABEL(i2c0));
+static const struct gpio_dt_spec btn = GPIO_DT_SPEC_GET(DT_NODELABEL(user_button_0), gpios);
+static const struct device *adc = DEVICE_DT_GET(DT_ALIAS(my_adc));
+static const struct adc_channel_cfg adc_ch = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel));
+
+static const gpio_dt_spec lcd_rs = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 0);
+static const gpio_dt_spec lcd_en = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 1);
+static const gpio_dt_spec lcd_d4 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 2);
+static const gpio_dt_spec lcd_d5 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 3);
+static const gpio_dt_spec lcd_d6 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 4);
+static const gpio_dt_spec lcd_d7 = GPIO_DT_SPEC_GET_BY_IDX(ZEPHYR_USER_NODE, gpios, 5);
+
+int main(void)
+{
+    int theta;
+    Servo myServo1(TPM1, 0, GPIOB, 0);
+    MyRTC myTimer(i2c);
+    Tracker tracker(-23.6028, -46.6438);
+    Button myButton(btn);
+    LCD lcd(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6, lcd_d7);
+
+    while(1)
+    {
+        printk("Modo atual = %d", myButton.getModoAtual());
+        k_msleep(1000);
+    }
+}

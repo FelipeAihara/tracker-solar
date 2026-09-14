@@ -1,0 +1,40 @@
+// Teste standalone do modulo Servo (servo.hpp)
+// Copie o conteudo deste arquivo para src/main.cpp, depois:
+// Varre os dois servos de 0 a 180 graus e volta, continuamente.
+
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <servo.hpp>
+#include <pot.hpp>
+
+static const struct device *adc = DEVICE_DT_GET(DT_ALIAS(my_adc));
+
+static const struct adc_channel_cfg adc_ch1 = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel1));
+#define POT1_VREF DT_PROP(DT_ALIAS(my_adc_channel1), zephyr_vref_mv)
+#define POT1_RES  DT_PROP(DT_ALIAS(my_adc_channel1), zephyr_resolution)
+
+static const struct adc_channel_cfg adc_ch2 = ADC_CHANNEL_CFG_DT(DT_ALIAS(my_adc_channel2));
+#define POT2_VREF DT_PROP(DT_ALIAS(my_adc_channel2), zephyr_vref_mv)
+#define POT2_RES  DT_PROP(DT_ALIAS(my_adc_channel2), zephyr_resolution)
+
+static const struct pwm_dt_spec pwm_gamma = PWM_DT_SPEC_GET(DT_ALIAS(pwm_servo_gamma));
+static const struct pwm_dt_spec pwm_beta  = PWM_DT_SPEC_GET(DT_ALIAS(pwm_servo_beta));
+
+int main(void)
+{
+    Servo myServoGamma(pwm_gamma);
+    Servo myServoBeta(pwm_beta);
+    Potenciometro myPot1(adc, adc_ch1, POT1_VREF, POT1_RES);
+    Potenciometro myPot2(adc, adc_ch2, POT2_VREF, POT2_RES);
+
+    while (1)
+    {
+        int theta1 = myPot1.read();
+        int theta2 = myPot2.read();
+        // printk("Pot 1: %d graus\n", theta1);
+        // printk("Pot 2: %d graus\n", theta2);
+        myServoGamma.write(theta1);
+        myServoBeta.write(theta2);
+        k_msleep(100);
+    }
+}

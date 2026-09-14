@@ -1,3 +1,4 @@
+// Validado: 13/09/2026
 // Teste standalone do modulo Button (button.hpp)
 // Copie o conteudo deste arquivo para src/main.cpp, depois:
 // A cada aperto do botao, o modo avanca no ciclo

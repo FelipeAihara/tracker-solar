@@ -1,0 +1,29 @@
+// Teste standalone do modulo Solarimetria (solarimetria.hpp) + MyRTC (rtc.hpp)
+// Copie o conteudo deste arquivo para src/main.cpp, depois:
+// Le o horario do RTC (DS3231) e calcula beta/gamma para a posicao solar.
+// Ajuste latitude/longitude/fuso para o local de instalacao.
+
+#include <zephyr/kernel.h>
+#include <zephyr/sys/printk.h>
+#include <zephyr/device.h>
+#include <rtc.hpp>
+#include <solarimetria.hpp>
+
+static const struct device *i2c = DEVICE_DT_GET(DT_NODELABEL(i2c1));
+
+int main(void)
+{
+    MyRTC myTimer(i2c);
+    Solarimetria solarimetria(-23.5570, -46.7290); // latitude, longitude (Brasilia, UTC-3)
+
+    while (1)
+    {
+        myTimer.read();
+        solarimetria.atualizar(myTimer.getTempo());
+
+        printk("Beta: %d  Gamma: %d  Sol visivel: %d\n",
+               solarimetria.getBeta(), solarimetria.getGamma(), solarimetria.solVisivel());
+
+        k_msleep(1000);
+    }
+}
