@@ -1,14 +1,8 @@
-/* 
-Esse código não está muito bom. Problemas nas linhas 8 e 13, em que eu coloquei as propriedades
-de um canal específico. Entretanto, como ambos os canais têm as mesmas propriedades, não muda
-muito.
-*/ 
-
 #include "pot.hpp"
 
 Potenciometro::Potenciometro(const struct device *adc, adc_channel_cfg adc_ch, uint32_t vref, uint8_t resolution) :
     adc_(adc), adc_ch_(adc_ch), vref_mv(vref)
-{   
+{
     seq.channels = BIT(adc_ch_.channel_id);
     seq.buffer = &buf;
     seq.buffer_size = sizeof(buf);
@@ -29,16 +23,27 @@ Potenciometro::Potenciometro(const struct device *adc, adc_channel_cfg adc_ch, u
 int Potenciometro::read()
 {
     if (adc_ == NULL || !device_is_ready(adc_)) {
-        return -1; 
+        return -1;
     }
 
-    int theta;
     int ret = adc_read(adc_, &seq);
     if (ret < 0) {
         printk("Could not read ADC: %d\r\n", ret);
+        return -1;
     }
 
-    val_mv = ((uint32_t)buf * vref_mv )/ (1 << seq.resolution);
-    theta = (val_mv * 180) / 3300;
-    return theta;
+    val_mv = ((uint32_t)buf * vref_mv) / (1 << seq.resolution);
+    return mvParaAngulo(val_mv, vref_mv);
+}
+
+int Potenciometro::mvParaAngulo(uint32_t val_mv, uint32_t vref_mv)
+{
+    if (vref_mv == 0) {
+        return 0;
+    }
+
+    int angulo = static_cast<int>((val_mv * 180U) / vref_mv);
+    if (angulo < 0)   angulo = 0;
+    if (angulo > 180) angulo = 180;
+    return angulo;
 }

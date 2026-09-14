@@ -2,6 +2,9 @@
 
 MyRTC::MyRTC(const struct device *dev) {  // ← const aqui também
     i2c_dev_ = dev;
+    if (!device_is_ready(i2c_dev_)) {
+        printk("I2C peripheral is not ready\r\n");
+    }
 }
 
 int MyRTC::read() {

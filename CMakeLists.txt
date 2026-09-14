@@ -8,8 +8,9 @@ target_sources(app PRIVATE
     lib/pot/src/pot.cpp
     # lib/pwm_frdm/src/pwm_z42.c
     # lib/servo_frdm/src/servo_frdm.cpp
+    lib/servo/src/servo.cpp
     lib/rtc/src/rtc.cpp
-    lib/tracker/src/tracker.cpp
+    lib/solarimetria/src/solarimetria.cpp
     lib/lcd/src/lcd.cpp
     lib/button/src/button.cpp
 )
@@ -18,8 +19,9 @@ target_include_directories(app PRIVATE
     lib/pot/include
     # lib/pwm_frdm/include
     # lib/servo_frdm/include
+    lib/servo/include
     lib/rtc/include
-    lib/tracker/include
+    lib/solarimetria/include
     lib/lcd/include
     lib/button/include
 )
