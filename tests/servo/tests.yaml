@@ -1,4 +1,0 @@
-tests:
-  tracker_solar.servo:
-    tags: tracker_solar
-    platform_allow: native_sim

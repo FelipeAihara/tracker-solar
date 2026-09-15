@@ -42,7 +42,10 @@ int Potenciometro::mvParaAngulo(uint32_t val_mv, uint32_t vref_mv)
         return 0;
     }
 
-    int angulo = static_cast<int>((val_mv * 180U) / vref_mv);
+    int angulo = static_cast<int>((val_mv * 180U) / 2800); // Número mágico de 2800
+                                                           // vem do fato de que o ADC
+                                                           // do ESP32-S3 é muito impreciso
+                                                           // e satura em 2800, ao invés de VREF_MV(3800)
     if (angulo < 0)   angulo = 0;
     if (angulo > 180) angulo = 180;
     return angulo;
